@@ -19,6 +19,7 @@ class BPLimitGroupMembership{
         add_action('bp_get_group_join_button',array($this,'fix_join_button'),100);
         add_filter('bp_groups_auto_join',array($this,'can_join'));
         add_filter('bp_core_admin_screen',array($this,'limit_group_join_admin_screen'));
+        add_action('wp',array($this,'check_group_create'),2);
     }
     
     function get_instance(){
@@ -144,6 +145,45 @@ function limit_group_join_admin_screen(){
 </table>				
 <?php
 }  
+
+
+function restrict_group_create($user_id=null){
+	global $bp;
+
+    //no restriction to site admin
+    if (!bp_is_group_create() ||is_super_admin())
+		return false;
+    //if we are here,It is group creation step
+
+    if(!$user_id)
+	$user_id=$bp->loggedin_user->id;
+    //even in cae of zero, it will return true
+    if(!empty($_COOKIE['bp_new_group_id']))
+        return;//this is intermediate step of group creation
+    
+    if(!self::can_join()){
+
+		bp_core_add_message(apply_filters('restrict_group_membership_message',__("You already have the maximum no. of groups allowed. You can not create or join new groups!")),'error');
+		remove_action( 'wp', 'groups_action_create_group', 3 );
+		bp_core_redirect(bp_get_root_domain().'/'.  bp_get_groups_slug());
+    }
+
+
+}
+/**
+ * Check if we should allow creating group or not
+ * @global type $bp
+ * @return type 
+ */
+function check_group_create(){
+	global $bp;
+	if(!function_exists('bp_is_active')||!bp_is_active('groups'))
+		return; //do not cause headache
+	
+	self::restrict_group_create();
+}
+
+
 }
 
 BPLimitGroupMembership::get_instance();
