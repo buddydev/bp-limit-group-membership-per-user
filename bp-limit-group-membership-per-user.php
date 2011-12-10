@@ -4,7 +4,7 @@
  * Plugin URI:http://buddydev.com/plugins/bp-limit-group-membership/
  * Author: Brajesh Singh
  * Author URI: http://buddydev.com/members/sbrajesh
- * Version : 1.0
+ * Version : 1.0.1
  * License: GPL
  * Description: Restricts the no. of Groups a user can join
  */
@@ -20,6 +20,10 @@ class BPLimitGroupMembership{
         add_filter('bp_groups_auto_join',array($this,'can_join'));
         add_filter('bp_core_admin_screen',array($this,'limit_group_join_admin_screen'));
         add_action('wp',array($this,'check_group_create'),2);
+        add_action('init',array($this,'remove_hook'),2);
+       //ajaxed join/leave
+        add_action( 'wp_ajax_joinleave_group', array($this,'ajax_joinleave_group') );
+
     }
     
     function get_instance(){
@@ -38,7 +42,7 @@ class BPLimitGroupMembership{
 	return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT m.group_id) FROM {$bp->groups->table_name_members} m WHERE m.user_id = %d AND m.is_confirmed = 1 AND m.is_banned = 0", $user_id ) );
 		
     }
-    function can_join(){
+        function can_join(){
        
         $limit=self::get_limit();
         if(is_super_admin())
@@ -104,6 +108,67 @@ class BPLimitGroupMembership{
         if($btn['id']=='request_membership'||$btn['id']=='join_group')
         $btn='';
         return $btn;
+    }
+    
+    //ajax group join/leave
+    /* AJAX join or leave a group when clicking the "join/leave" button
+     * A copy of bp_dtheme_ajax_joinleave_group function modified for our purpose
+     *  */
+    function ajax_joinleave_group() {
+	global $bp;
+
+	if ( groups_is_user_banned( $bp->loggedin_user->id, $_POST['gid'] ) )
+		return false;
+
+	if ( !$group = new BP_Groups_Group( $_POST['gid'], false, false ) )
+		return false;
+
+	if ( !groups_is_user_member( $bp->loggedin_user->id, $group->id ) ) {
+            if(!self::can_join()){
+                echo apply_filters('restrict_group_membership_message',__("You already have the maximum no. of groups allowed. You can not create or join new groups!"));
+		return;
+            }   
+		if ( 'public' == $group->status ) {
+
+			check_ajax_referer( 'groups_join_group' );
+
+			if ( !groups_join_group( $group->id ) ) {
+				_e( 'Error joining group', 'buddypress' );
+			} else {
+				echo '<a id="group-' . esc_attr( $group->id ) . '" class="leave-group" rel="leave" title="' . __( 'Leave Group', 'buddypress' ) . '" href="' . wp_nonce_url( bp_get_group_permalink( $group ) . 'leave-group', 'groups_leave_group' ) . '">' . __( 'Leave Group', 'buddypress' ) . '</a>';
+			}
+
+		} else if ( 'private' == $group->status ) {
+
+			check_ajax_referer( 'groups_request_membership' );
+
+			if ( !groups_send_membership_request( $bp->loggedin_user->id, $group->id ) ) {
+				_e( 'Error requesting membership', 'buddypress' );
+			} else {
+				echo '<a id="group-' . esc_attr( $group->id ) . '" class="membership-requested" rel="membership-requested" title="' . __( 'Membership Requested', 'buddypress' ) . '" href="' . bp_get_group_permalink( $group ) . '">' . __( 'Membership Requested', 'buddypress' ) . '</a>';
+			}
+		}
+
+	} else {
+
+		check_ajax_referer( 'groups_leave_group' );
+
+		if ( !groups_leave_group( $group->id ) ) {
+			_e( 'Error leaving group', 'buddypress' );
+		} else {
+			if ( 'public' == $group->status ) {
+				echo '<a id="group-' . esc_attr( $group->id ) . '" class="join-group" rel="join" title="' . __( 'Join Group', 'buddypress' ) . '" href="' . wp_nonce_url( bp_get_group_permalink( $group ) . 'join', 'groups_join_group' ) . '">' . __( 'Join Group', 'buddypress' ) . '</a>';
+			} else if ( 'private' == $group->status ) {
+				echo '<a id="group-' . esc_attr( $group->id ) . '" class="request-membership" rel="join" title="' . __( 'Request Membership', 'buddypress' ) . '" href="' . wp_nonce_url( bp_get_group_permalink( $group ) . 'request-membership', 'groups_send_membership_request' ) . '">' . __( 'Request Membership', 'buddypress' ) . '</a>';
+			}
+		}
+	}
+    }
+    
+    //remove ajax handler
+    //currently works for bp 1.5 bp-default theme
+    function remove_hook(){
+        remove_action( 'wp_ajax_joinleave_group', 'bp_dtheme_ajax_joinleave_group' );
     }
     //do not allow inviting the members who have exhusted their limit
     function ouput_js(){
