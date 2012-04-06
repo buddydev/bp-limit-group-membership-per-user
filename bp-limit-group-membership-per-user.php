@@ -4,11 +4,13 @@
  * Plugin URI:http://buddydev.com/plugins/bp-limit-group-membership/
  * Author: Brajesh Singh
  * Author URI: http://buddydev.com/members/sbrajesh
- * Version : 1.0.1
+ * Version : 1.0.2
  * License: GPL
  * Description: Restricts the no. of Groups a user can join
  */
-
+/**
+ * Special tanks to Matteo for reporting the issue /helping with code suggestion for the case when user opens the join link directly
+ */
 class BPLimitGroupMembership{
     
     private static $instance;
@@ -23,6 +25,8 @@ class BPLimitGroupMembership{
         add_action('init',array($this,'remove_hook'),2);
        //ajaxed join/leave
         add_action( 'wp_ajax_joinleave_group', array($this,'ajax_joinleave_group') );
+        //for normal bp action(when a user opens the join link), thanks to Matteo
+        add_action( 'bp_actions', array($this,'action_join_group') );
 
     }
     
@@ -42,7 +46,7 @@ class BPLimitGroupMembership{
 	return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT m.group_id) FROM {$bp->groups->table_name_members} m WHERE m.user_id = %d AND m.is_confirmed = 1 AND m.is_banned = 0", $user_id ) );
 		
     }
-        function can_join(){
+    public static function can_join(){
        
         $limit=self::get_limit();
         if(is_super_admin())
@@ -165,10 +169,48 @@ class BPLimitGroupMembership{
 	}
     }
     
+   function action_join_group(){
+       global $bp;
+
+	if ( !bp_is_single_item() || !bp_is_groups_component() || !bp_is_current_action( 'join' ) )
+		return false;
+
+	// Nonce check
+	if ( !check_admin_referer( 'groups_join_group' ) )
+		return false;
+
+	// Skip if banned or already a member
+	if ( !groups_is_user_member( $bp->loggedin_user->id, $bp->groups->current_group->id ) && !groups_is_user_banned( $bp->loggedin_user->id, $bp->groups->current_group->id ) &&self::can_join()) {
+
+		// User wants to join a group that is not public
+		if ( $bp->groups->current_group->status != 'public' ) {
+			if ( !groups_check_user_has_invite( $bp->loggedin_user->id, $bp->groups->current_group->id ) ) {
+				bp_core_add_message( __( 'There was an error joining the group.', 'buddypress' ), 'error' );
+				bp_core_redirect( bp_get_group_permalink( $bp->groups->current_group ) );
+			}
+		}
+
+		// User wants to join any group
+		if ( !groups_join_group( $bp->groups->current_group->id ) )
+			bp_core_add_message( __( 'There was an error joining the group.', 'buddypress' ), 'error' );
+		else
+			bp_core_add_message( __( 'You joined the group!', 'buddypress' ) );
+
+		bp_core_redirect( bp_get_group_permalink( $bp->groups->current_group ) );
+	}
+        else if(!self::can_join()){
+            //feedback
+            bp_core_add_message(apply_filters('restrict_group_membership_message',__("You already have the maximum no. of groups allowed. You can not create or join new groups!")),'error');
+            
+        }
+
+	bp_core_load_template( apply_filters( 'groups_template_group_home', 'groups/single/home' ) );
+   } 
     //remove ajax handler
     //currently works for bp 1.5 bp-default theme
     function remove_hook(){
         remove_action( 'wp_ajax_joinleave_group', 'bp_dtheme_ajax_joinleave_group' );
+        remove_action( 'bp_actions', 'groups_action_join_group' );
     }
     //do not allow inviting the members who have exhusted their limit
     function ouput_js(){
