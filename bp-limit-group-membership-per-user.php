@@ -4,7 +4,7 @@
  * Plugin URI:http://buddydev.com/plugins/bp-limit-group-membership/
  * Author: Brajesh Singh
  * Author URI: http://buddydev.com/members/sbrajesh
- * Version : 1.0.2
+ * Version : 1.0.3
  * License: GPL
  * Description: Restricts the no. of Groups a user can join
  */
@@ -20,14 +20,15 @@ class BPLimitGroupMembership{
         add_action('wp_footer',array($this,'ouput_js'),200);//we filter the invite list using javascript, in 1.6, we won't need it
         add_action('bp_get_group_join_button',array($this,'fix_join_button'),100);//remove the group join button
         add_filter('bp_groups_auto_join',array($this,'can_join'));///check if we can allow autojoin
-        add_filter('bp_core_admin_screen',array($this,'limit_group_join_admin_screen'));//show super admin option to set the maximum no.
+       
         add_action('wp',array($this,'check_group_create'),2);//check if group can be created
         add_action('init',array($this,'remove_hook'),2);//remove the bp hooks
        //ajaxed join/leave
         add_action( 'wp_ajax_joinleave_group', array($this,'ajax_joinleave_group') );
         //for normal bp action(when a user opens the join link), thanks to Matteo
         add_action( 'bp_actions', array($this,'action_join_group') );
-
+        
+        //add_filter('bp_core_admin_screen',array($this,'limit_group_join_admin_screen'));//show super admin option to set the maximum no.
     }
     
     function get_instance(){
@@ -238,24 +239,7 @@ class BPLimitGroupMembership{
     <?php
     } 
     
-/**
- * Show the option on BuddyPress settings page to Limit the group
- */
-    function limit_group_join_admin_screen(){
-    ?>
-    <table class="form-table">
-    <tbody>
-    <tr>
-            <th scope="row"><?php _e( 'Limit Groups Membership Per User' ) ?></th>
-                    <td>
-                        <p><?php _e( 'How many Groups a user can join?') ?></p>
-                        <label><input type="text" name="bp-admin[group_membership_limit]" id="group_membership_limit" value="<?php echo bp_get_option( 'group_membership_limit',0 );?>" /></label><br>
-                    </td>
-            </tr>
-    </tbody>
-    </table>				
-    <?php
-    }  
+ 
 
 
     function restrict_group_create($user_id=null){
@@ -299,4 +283,39 @@ class BPLimitGroupMembership{
 
 BPLimitGroupMembership::get_instance();
 
+class BPLimitGroupMembershipAdminHelper{
+    private static $instance;
+    
+    function __construct() {
+        add_Action('bp_admin_init',array($this,'register_settings'),20);
+    }
+     function get_instance(){
+     if(!isset (self::$instance))
+             self::$instance=new self();
+     return self::$instance;
+    }
+    function register_settings(){
+        // Add the ajax Registration settings section
+            add_settings_section( 'bp_limit_group_membership',        __( 'Limit Group membership Settings',  'bp-limit-group-membership' ), array($this,'reg_section'),   'buddypress'              );
+            // Allow loading form via jax or nt?
+            add_settings_field( 'group_membership_limit', __( 'How many Groups a user can join?',   'bp-limit-group-membership' ), array($this,'settings_field'),   'buddypress', 'bp_limit_group_membership' );
+            register_setting  ( 'buddypress',         'group_membership_limit',   'intval' );
+    }
+    
+    function reg_section(){
+        
+    }
+    
+    function settings_field(){
+            $val=bp_get_option('group_membership_limit',0);?>
+
+         
+                   
+                    <label>
+                        <input type="text" name="group_membership_limit" id="group_membership_limit" value="<?php echo $val;?>" /></label><br>
+                    
+   <?php }
+    
+}
+BPLimitGroupMembershipAdminHelper::get_instance();
 ?>
