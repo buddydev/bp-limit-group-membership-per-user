@@ -33,8 +33,7 @@ class BP_Limit_Group_Membership_Loader {
 	 * Setup actions
 	 */
     private function setup() {
-        add_action( 'plugins_loaded', array( $this, 'load' ) );
-
+        add_action( 'bp_loaded', array( $this, 'load' ) );
     }
 
 	/**
