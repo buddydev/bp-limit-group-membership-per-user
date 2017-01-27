@@ -1,6 +1,6 @@
 <?php
 
-class BPLimitGroupMembershipAdminHelper {
+class BP_Limit_Group_Membership_Admin_Helper {
 	private static $instance;
 
 	private function __construct() {
@@ -8,6 +8,7 @@ class BPLimitGroupMembershipAdminHelper {
 	}
 
 	public static function get_instance() {
+
 		if ( ! isset ( self::$instance ) ) {
 			self::$instance = new self();
 		}
@@ -19,7 +20,7 @@ class BPLimitGroupMembershipAdminHelper {
 		// Add the ajax Registration settings section
 		add_settings_section( 'bp_limit_group_membership',
 			__( 'Limit Group membership Settings', 'bp-limit-group-membership' ),
-			array( $this, 'reg_section'	),
+			array( $this, 'reg_section' ),
 			'buddypress'
 		);
 
@@ -34,20 +35,19 @@ class BPLimitGroupMembershipAdminHelper {
 		register_setting( 'buddypress', 'group_membership_limit', 'intval' );
 	}
 
-	function reg_section() {
+	public function reg_section() {
 
 	}
 
-	function settings_field() {
+	public function settings_field() {
 		$val = bp_get_option( 'group_membership_limit', 0 ); ?>
 
-
-		<label>
-			<input type="text" name="group_membership_limit" id="group_membership_limit" value="<?php echo $val; ?>"/>
-		</label><br />
+        <label>
+            <input type="text" name="group_membership_limit" id="group_membership_limit" value="<?php echo $val; ?>"/>
+        </label><br/>
 
 	<?php }
 
 }
 
-BPLimitGroupMembershipAdminHelper::get_instance();
+BP_Limit_Group_Membership_Admin_Helper::get_instance();

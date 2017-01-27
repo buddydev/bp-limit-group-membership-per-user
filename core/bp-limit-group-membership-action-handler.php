@@ -3,7 +3,7 @@
 /**
  * Special tanks to Matteo for reporting the issue /helping with code suggestion for the case when user opens the join link directly
  */
-class BPLimitGroupMembership {
+class BP_Limit_Group_Membership_Action_Handler {
 
 	private static $instance;
 
@@ -15,7 +15,7 @@ class BPLimitGroupMembership {
 	/**
 	 * Get singleton instance
 	 *
-	 * @return BPLimitGroupMembership
+	 * @return BP_Limit_Group_Membership_Action_Handler
 	 */
 	public static function get_instance() {
 
@@ -262,4 +262,4 @@ class BPLimitGroupMembership {
 	}
 }
 
-BPLimitGroupMembership::get_instance();
+BP_Limit_Group_Membership_Action_Handler::get_instance();
