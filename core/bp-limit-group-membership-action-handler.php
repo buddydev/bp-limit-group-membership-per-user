@@ -256,7 +256,15 @@ class BP_Limit_Group_Membership_Action_Handler {
 	 * @return bool true if allowed else false
 	 */
 	public static function can_join() {
+		return apply_filters( 'bp_limit_group_membership_allow_group_join', self::is_allowed_to_join() );
+	}
 
+	/**
+     * Is user allowed to join new groups ?
+     *
+	 * @return bool
+	 */
+	private static function is_allowed_to_join() {
 		if ( is_super_admin() ) {
 			return true;
 		}
@@ -277,7 +285,7 @@ class BP_Limit_Group_Membership_Action_Handler {
 		}
 
 		return false;
-	}
+    }
 
 	/**
 	 * Get the list of friends who should not be invited.
