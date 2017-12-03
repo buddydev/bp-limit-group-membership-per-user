@@ -44,7 +44,7 @@ class BP_Limit_Group_Membership_Action_Handler {
 
 
 		// remove the group join button.
-		add_action( 'bp_get_group_join_button', array( $this, 'fix_join_button' ), 100 );
+		add_filter( 'bp_get_group_join_button', array( $this, 'fix_join_button' ), 100 );
 		// check if we can allow autojoin.
 		add_filter( 'bp_groups_auto_join', array( $this, 'can_join' ) );
 
