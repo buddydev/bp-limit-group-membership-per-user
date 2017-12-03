@@ -9,15 +9,30 @@
  * License: GPL
  * Description: Restricts the no. of Groups a user can join
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit( 0 );
+}
+
 class BP_Limit_Group_Membership_Loader {
 
+	/**
+	 * Singleton instance.
+	 *
+	 * @var BP_Limit_Group_Membership_Loader
+	 */
 	private static $instance = null;
 
+	/**
+	 * Constructor.
+	 */
 	private function __construct() {
 		$this->setup();
 	}
 
 	/**
+	 * Get the singleton instance.
+	 *
 	 * @return BP_Limit_Group_Membership_Loader
 	 */
 	public static function get_instance() {
@@ -48,5 +63,5 @@ class BP_Limit_Group_Membership_Loader {
 
 }
 
-//initialize
+// initialize.
 BP_Limit_Group_Membership_Loader::get_instance();
