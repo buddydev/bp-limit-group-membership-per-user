@@ -49,6 +49,7 @@ class BP_Limit_Group_Membership_Loader {
 	 */
 	private function setup() {
 		add_action( 'bp_loaded', array( $this, 'load' ) );
+		add_action( 'bp_init', array( $this, 'load_textdomain' ), 2 );
 	}
 
 	/**
@@ -59,6 +60,13 @@ class BP_Limit_Group_Membership_Loader {
 
 		require_once $path . 'core/bp-limit-group-membership-action-handler.php';
 		require_once $path . 'core/bp-limit-group-membership-admin.php';
+	}
+
+	/**
+	 * Load translation
+	 */
+	public function load_textdomain() {
+		load_plugin_textdomain( 'bp-limit-group-membership-per-user', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
 }

@@ -114,7 +114,7 @@ class BP_Limit_Group_Membership_Action_Handler {
 		}
 
 		if ( ! self::can_join() ) {
-			bp_core_add_message( apply_filters( 'restrict_group_membership_message', __( 'You already have the maximum no. of groups allowed. You can not create or join new groups!' ) ), 'error' );
+			bp_core_add_message( apply_filters( 'restrict_group_membership_message', __( 'You already have the maximum no. of groups allowed. You can not create or join new groups!', 'bp-limit-group-membership-per-user' ) ), 'error' );
 			bp_core_redirect( bp_get_group_permalink( $bp->groups->current_group ) );
 		} else {
 			// default Bp handler.
@@ -132,7 +132,7 @@ class BP_Limit_Group_Membership_Action_Handler {
 		}
 
 		if ( ! self::can_join() ) {
-			bp_core_add_message( apply_filters( 'restrict_group_membership_message', __( 'You already have the maximum no. of groups allowed. You can not request for a new group membership!' ) ), 'error' );
+			bp_core_add_message( apply_filters( 'restrict_group_membership_message', __( 'You already have the maximum no. of groups allowed. You can not request for a new group membership!', 'bp-limit-group-membership-per-user' ) ), 'error' );
 			bp_core_redirect( bp_get_group_permalink( groups_get_current_group() ) );
 		}
 	}
@@ -220,7 +220,7 @@ class BP_Limit_Group_Membership_Action_Handler {
 		}
 		// this is intermediate step of group creation.
 		if ( ! self::can_join() ) {
-			bp_core_add_message( apply_filters( 'restrict_group_membership_message', __( 'You already have the maximum no. of groups allowed. You can not create or join new groups!' ) ), 'error' );
+			bp_core_add_message( apply_filters( 'restrict_group_membership_message', __( 'You already have the maximum no. of groups allowed. You can not create or join new groups!', 'bp-limit-group-membership-per-user' ) ), 'error' );
 			remove_action( 'wp', 'groups_action_create_group', 3 );
 			bp_core_redirect( bp_get_root_domain() . '/' . bp_get_groups_slug() );
 		}

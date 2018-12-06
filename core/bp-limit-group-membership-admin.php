@@ -41,14 +41,14 @@ class BP_Limit_Group_Membership_Admin_Helper {
 	public function register_settings() {
 		// Add the settings section.
 		add_settings_section( 'bp_limit_group_membership',
-			__( 'Limit Group membership Settings', 'bp-limit-group-membership' ),
+			__( 'Limit Group membership Settings', 'bp-limit-group-membership-per-user' ),
 			array( $this, 'reg_section' ),
 			'buddypress'
 		);
 
 		// Allow loading form via jax or not?
 		add_settings_field( 'group_membership_limit',
-			__( 'How many Groups a user can join?', 'bp-limit-group-membership' ),
+			__( 'How many Groups a user can join?', 'bp-limit-group-membership-per-user' ),
 			array( $this, 'settings_field' ),
 			'buddypress',
 			'bp_limit_group_membership'
