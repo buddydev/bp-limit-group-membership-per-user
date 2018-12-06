@@ -5,7 +5,7 @@
  * Plugin URI: https://buddydev.com/plugins/bp-limit-group-membership/
  * Author: BuddyDev
  * Author URI: https://buddydev.com/members/sbrajesh
- * Version : 1.0.6
+ * Version : 1.0.7
  * License: GPL
  * Description: Restricts the no. of Groups a user can join
  */
